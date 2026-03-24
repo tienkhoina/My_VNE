@@ -1,0 +1,9 @@
+ python main.py \
+solver.solver_name=ppo_flag_meta \
++v_sim_setting=v_sim_setting_flagvne \
++p_net_setting=p_net_setting_flagvne \
+training.num_train_epochs=1 \
+rl.target_steps=10 \
+rl.repeat_times=2 \
+rl.feature_constructor.name=flag \
+> log.txt 2>&1
