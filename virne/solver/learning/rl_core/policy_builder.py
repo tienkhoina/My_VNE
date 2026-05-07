@@ -257,6 +257,34 @@ class PolicyBuilder:
         )
 
         return policy, optimizer
+    
+    @staticmethod
+    def build_my_dual_policy(agent):
+
+        from virne.solver.learning.rl_policy.my_actor_critic import MyActorCritic
+
+
+        feature_dim_config = PolicyBuilder.get_feature_dim_config(agent.config)
+        general_config = PolicyBuilder.get_general_nn_config(agent.config)
+
+        # ===== BUILD MODEL (NO WRAPPER) =====
+        policy = MyActorCritic(
+            p_net_num_nodes=feature_dim_config['p_net_num_nodes'],
+            p_net_feature_dim=feature_dim_config['p_net_x_dim'],
+            p_net_edge_dim=feature_dim_config['p_net_edge_dim'],
+            v_net_feature_dim=feature_dim_config['v_net_x_dim'],
+            v_net_edge_dim=feature_dim_config['v_net_edge_dim'],
+            **general_config
+        ).to(agent.device)
+
+        # ===== HARD CODE OPTIMIZER (LIKE FLAG) =====
+        optimizer = torch.optim.AdamW(
+            policy.parameters(),
+            lr=1e-4,              # bạn có thể chỉnh
+            weight_decay=1e-5     # giống style paper
+        )
+
+        return policy, optimizer
 
 
 class OptimizerBuilder:
@@ -363,7 +391,7 @@ def get_v_net_edge_dim(config: Any) -> int:
 
 if __name__ == "__main__":
 
-    print("=== TEST build_flag_policy ===")
+    print("=== TEST build_my_dual_policy ===")
 
     import torch
     from types import SimpleNamespace
@@ -385,9 +413,9 @@ if __name__ == "__main__":
 
     config.rl = SimpleNamespace()
 
+    # 🔥 IMPORTANT FIX
     config.rl.learning_rate = {
-        "actor": 1e-3,
-        "critic": 1e-3,
+        "model": 1e-3,
     }
 
     config.rl.weight_decay = 0.0
@@ -412,7 +440,6 @@ if __name__ == "__main__":
     class DummyAgent:
 
         def __init__(self, config):
-
             self.config = config
             self.device = torch.device("cpu")
 
@@ -421,10 +448,112 @@ if __name__ == "__main__":
 
 
     # -----------------------
-    # call builder
+    # build policy
     # -----------------------
 
-    policy, optimizer = PolicyBuilder.build_flag_policy(agent)
+    policy, optimizer = PolicyBuilder.build_my_dual_policy(agent)
 
+    print("\n=== POLICY ===")
     print(policy)
+
+    print("\n=== OPTIMIZER ===")
     print(optimizer)
+
+
+    # -----------------------
+    # 🔥 TEST FORWARD (FLAG STYLE)
+    # -----------------------
+
+    print("\n=== TEST FORWARD (FLAG STYLE) ===")
+
+    B = 2
+    V = 3
+    P = 5
+
+    from torch_geometric.data import Data, Batch
+    from torch.distributions import Categorical
+
+    # ===== fake p_net =====
+    p_data = []
+    for _ in range(B):
+        x = torch.randn(P, config.rl.feature_constructor.num_extracted_p_node_attrs + 1)
+        edge_index = torch.tensor([[0, 1], [1, 2]])
+        edge_attr = torch.randn(edge_index.shape[1], 1)
+        p_data.append(Data(x=x, edge_index=edge_index, edge_attr=edge_attr))
+
+    p_batch = Batch.from_data_list(p_data)
+
+    # ===== fake v_net =====
+    v_data = []
+    for _ in range(B):
+        x = torch.randn(V, config.rl.feature_constructor.num_extracted_v_node_attrs + 1)
+        edge_index = torch.tensor([[0, 1], [1, 2]])
+        edge_attr = torch.randn(edge_index.shape[1], 1)
+        v_data.append(Data(x=x, edge_index=edge_index, edge_attr=edge_attr))
+
+    v_batch = Batch.from_data_list(v_data)
+
+    # ===== fake mask =====
+    action_mask = torch.ones(B, V, P)
+    # test mask
+    action_mask = torch.zeros(B, V, P)
+
+    # chỉ cho phép (v=1, p=2)
+    action_mask[0, 1, 2] = 1
+
+    # sample thứ 2 bình thường
+    action_mask[1] = 1
+    obs = {
+        "p_net": p_batch,
+        "v_net": v_batch,
+        "action_mask": action_mask
+    }
+
+    # =========================
+    # 🔥 HIGH LEVEL
+    # =========================
+    high_logits = policy(obs, actor_high=True)   # (B, V)
+    print("high_logits:", high_logits.shape)
+
+    dist_high = Categorical(logits=high_logits)
+    v_action = dist_high.sample()               # (B,)
+    print("v_action:", v_action)
+
+    # =========================
+    # 🔥 LOW LEVEL
+    # =========================
+    low_logits = policy(
+        obs,
+        actor_low=True,
+        high_level_action=v_action
+    )                                           # (B, P)
+
+    print("low_logits:", low_logits.shape)
+
+    dist_low = Categorical(logits=low_logits)
+    p_action = dist_low.sample()                # (B,)
+    print("p_action:", p_action)
+
+    # =========================
+    # 🔥 COMBINE ACTION
+    # =========================
+    action = p_action * V + v_action
+    print("final action:", action)
+
+    # =========================
+    # 🔥 LOG PROB
+    # =========================
+    log_prob = dist_high.log_prob(v_action) + dist_low.log_prob(p_action)
+    print("log_prob:", log_prob)
+
+    # =========================
+    # 🔥 ENTROPY
+    # =========================
+    entropy = dist_high.entropy() + dist_low.entropy()
+    print("entropy:", entropy)
+
+    # =========================
+    # 🔥 CRITIC
+    # =========================
+    value = policy(obs, critic=True)
+    print("value:", value.shape)

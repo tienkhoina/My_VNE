@@ -89,9 +89,24 @@ class Logger:
                     if write_head:
                         writer.writerow(['update_time'] + list(data.keys()))
                     writer.writerow([step] + list(data.values()))
+                import pandas as pd
+
                 if step != 0 and step % self.config.logger.log_show_interval == 0:
-                    info_str = ' & '.join([f'{v:+3.4f}' for k, v in data.items() if sum([s in k for s in ['loss', 'prob', 'return', 'penalty', 'value']])])
-                    log_func(f'Update time: {step:06d} | ' + info_str)
+
+                    # lọc key cần log
+                    filtered = {
+                        k: v for k, v in data.items()
+                        if any(s in k for s in ['lr','loss','prob','return','penalty','value','kl'])
+                    }
+
+                    # convert thành DataFrame (1 row)
+                    df = pd.DataFrame([filtered])
+
+                    # format float
+                    df = df.round(4)
+
+                    # log đẹp
+                    log_func("\n" + df.to_string(index=False))
         # wandb
         if 'wandb' in self.loggers:
             log_data = data or {}

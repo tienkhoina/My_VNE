@@ -352,6 +352,49 @@ class TensorConvertor:
         else:
             raise Exception(f"Unrecognized type of observation {type(obs)}")
 
+    @staticmethod
+    def obs_as_tensor_myself(obs, device):
+        # ===== giữ nguyên graph =====
+        tensor_p_net_obs = TensorConvertor.p_net_obs_as_tensor(obs, device)
+        tensor_v_net_obs = TensorConvertor.v_net_obs_as_tensor(obs, device)
+
+        # ===== xử lý general riêng =====
+        if isinstance(obs, dict):
+            tensor_general = {
+                "curr_v_node_id": torch.LongTensor([obs["curr_v_node_id"]]).to(device),
+                "v_net_size": torch.FloatTensor([obs["v_net_size"]]).to(device),
+                # 🔥 mask giữ nguyên tensor (không batch)
+                "action_mask": torch.FloatTensor(obs["action_mask"]).to(device)
+            }
+
+        elif isinstance(obs, list):
+            B = len(obs)
+
+            curr_v_node_id = torch.LongTensor(
+                [o["curr_v_node_id"] for o in obs]
+            ).to(device)
+
+            v_net_size = torch.FloatTensor(
+                [o["v_net_size"] for o in obs]
+            ).to(device)
+
+            # 🔥 QUAN TRỌNG: mask = list tensor
+            action_mask = [
+                torch.FloatTensor(o["action_mask"]).to(device)
+                for o in obs
+            ]
+
+            tensor_general = {
+                "curr_v_node_id": curr_v_node_id,
+                "v_net_size": v_net_size,
+                "action_mask": action_mask
+            }
+
+        else:
+            raise Exception(f"Unrecognized type of observation {type(obs)}")
+
+        return {**tensor_p_net_obs, **tensor_v_net_obs, **tensor_general}
+
 
 def get_pyg_hetero_data(x_dict, edge_index_dict, edge_attr_dict, reverse_edge=True):
     """Preprocess the observation to adapt to batch mode."""

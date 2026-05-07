@@ -236,6 +236,8 @@ class ObservationHandler:
         Returns:
             v_net_status: The embedding status of virtual network with a shape of [3, ].
         """
+        
+
         norm_all_nodes = v_net.num_nodes / p_net_num_nodes
         norm_unplaced = (v_net.num_nodes - (v_node_id + 1)) / v_net.num_nodes
         norm_curr_vid = v_node_id + 1 / p_net_num_nodes

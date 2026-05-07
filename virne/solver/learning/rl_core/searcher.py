@@ -56,6 +56,7 @@ def select_action(
         action_logits = policy.act(observation)
 
     if mask is not None and mask_actions:
+        
         candidate_action_logits = apply_mask_to_logit(action_logits, mask) 
     else:
         candidate_action_logits = action_logits

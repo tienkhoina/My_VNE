@@ -176,7 +176,7 @@ class BaseEnvironment:
         Returns:
             reason (str): the reason of failure.
         """
-        if solution['early_rejection']:
+        if solution['early_rejection']: 
             return 'reject'
         if not solution['place_result']:
             return 'place'

@@ -125,6 +125,7 @@ class Controller:
         self.matching_mathod = config.get('matching_mathod', 'greedy')
         # link mapping
         self.shortest_method = config.get('shortest_method', 'k_shortest')
+        print('Shortest method: ', self.shortest_method)
         constraint_attr_names_checking_at_node = [n_attr.name for n_attr in self.node_constraint_attrs_checking_at_node]
         constraint_attr_names_checking_at_link = [l_attr.name for l_attr in self.link_constraint_attrs_checking_at_link]
         constraint_attr_names_checking_at_path = [l_attr.name for l_attr in self.link_constraint_attrs_checking_at_path]
@@ -148,6 +149,13 @@ class Controller:
         self.link_mapper = LinkMapper(self.constraint_checker, self.resource_updator, self.topology_analyzer, \
             self.link_resource_attrs, self.hard_constraint_attrs_names, self.step_constraint_offset_placeholder, \
             self.reusable)
+        
+    def resolve_shortest_method(self, shortest_method):
+        if shortest_method is not None:
+            return shortest_method
+        if hasattr(self, "shortest_method") and self.shortest_method is not None:
+            return self.shortest_method
+        return "k_shortest"
 
     def place_and_route(
             self,
@@ -156,7 +164,7 @@ class Controller:
             v_node_id: int,
             p_node_id: int,
             solution: Solution,
-            shortest_method: str = 'bfs_shortest',
+            shortest_method: None,
             k: int = 1,
             if_allow_constraint_violation: bool = False,
         ) -> Tuple[bool, dict]:
@@ -178,6 +186,9 @@ class Controller:
             result (bool): The result of the placement and routing.
             check_info (dict): The check info of the placement and routing.
         """
+        shortest_method = self.resolve_shortest_method(shortest_method)
+
+        
         if not if_allow_constraint_violation:
             result, route_info = self._safely_place_and_route(v_net, p_net, v_node_id, p_node_id, solution, shortest_method=shortest_method, k=k)
         else:
@@ -192,13 +203,14 @@ class Controller:
             v_node_id: int, 
             p_node_id: int, 
             solution: Solution, 
-            shortest_method: str = 'bfs_shortest', 
+            shortest_method: str = None, 
             k: int = 1
         ) -> Tuple[bool, dict]:
         """
         Attempt to place and route the virtual node `v_node_id` to the physical node `p_node_id` in the solution `solution`, ensuring all constraints are satisfied.      
         """
         # Place
+        shortest_method = self.resolve_shortest_method(shortest_method)
         place_result, place_info = self.node_mapper.place(v_net, p_net, v_node_id, p_node_id, solution)
         node_level_step_constraint_offset = solution['v_net_constraint_offsets']['node_level'][v_node_id]
         solution['v_net_single_step_constraint_offset'] = {'node_level': node_level_step_constraint_offset, 'link_level': {}, 'path_level': {}}
@@ -276,13 +288,16 @@ class Controller:
             v_node_id: int, 
             p_node_id: int, 
             solution: Solution, 
-            shortest_method: str = 'bfs_shortest', 
+            shortest_method: str = None, 
             k: int = 1
         ) -> Tuple[bool, dict]:
         """
         Attempt to place and route the virtual node `v_node_id` to the physical node `p_node_id` in the solution `solution`, without checking the feasibility of the solution.
         """
+        shortest_method = self.resolve_shortest_method(shortest_method)
+
         # Place
+
         place_result, place_info = self.node_mapper.place(v_net, p_net, v_node_id, p_node_id, solution, if_allow_constraint_violation=True)
         node_level_step_constraint_offset = solution['v_net_constraint_offsets']['node_level'][v_node_id]
         solution['v_net_single_step_constraint_offset'] = {'node_level': node_level_step_constraint_offset, 'link_level': {}, 'path_level': {}}

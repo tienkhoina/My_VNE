@@ -100,13 +100,13 @@ class RLBaseEnv(gym.Env):
             # mask[0] = True
 
 
-        print("\n=== MASK DEBUG ===")
-        print("curr_v_node_id:", self.curr_v_node_id)
-        print("selected_p_nodes:", self.selected_p_net_nodes)
-        print("candidate_nodes:", candidate_nodes)
-        print("mask sum:", mask.sum())
-        print("mask:", mask.astype(int))
-        print("==================")
+        # print("\n=== MASK DEBUG ===")
+        # print("curr_v_node_id:", self.curr_v_node_id)
+        # print("selected_p_nodes:", self.selected_p_net_nodes)
+        # print("candidate_nodes:", candidate_nodes)
+        # print("mask sum:", mask.sum())
+        # print("mask:", mask.astype(int))
+        # print("==================")
         return mask
 
     def action_masks(self):

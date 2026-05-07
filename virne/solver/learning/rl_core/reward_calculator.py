@@ -60,7 +60,7 @@ class GradualIntermediateRewardCalculator(BaseRewardCalculator):
             reward = -float(get_curr_place_progress(v_net, solution))
         solution['v_net_reward'] += reward
         self.v_net_reward += reward
-        print("reward =", reward)
+        # print("reward =", reward)
         return reward
 
 @RewardCalculatorRegistry.register('adaptive_intermediate')
@@ -75,7 +75,7 @@ class AdaptiveWeightRewardCalculator(BaseRewardCalculator):
             reward = -weight
         solution['v_net_reward'] += reward
         self.v_net_reward += reward
-        print("reward =", reward)
+        # print("reward =", reward)
         return reward
 
 
@@ -91,7 +91,7 @@ class FixedWeightRewardCalculator(BaseRewardCalculator):
             reward = -weight
         solution['v_net_reward'] += reward
         self.v_net_reward += reward
-        print("reward =", reward)
+        # print("reward =", reward)
         return reward
 
 
@@ -104,7 +104,7 @@ class VanillaRewardCalculator(BaseRewardCalculator):
             reward = 0.0
         solution['v_net_reward'] += reward
         self.v_net_reward += reward
-        print("reward =", reward)
+        # print("reward =", reward)
         return reward
 
 

@@ -265,6 +265,7 @@ class NEARankSolver(BaseNodeRankSolver):
         p_node_degree_dict = dict(p_net.degree())
         for v_node_id in sorted_v_nodes:
             selected_p_node_list = list(solution.node_slots.values())
+            
             p_candidate_nodes = self.controller.find_candidate_nodes(v_net, p_net, v_node_id, filter=selected_p_node_list, 
                                                                      check_node_constraint=True, check_link_constraint=True)
             if len(p_candidate_nodes) == 0:

@@ -117,7 +117,7 @@ class GATConvNet(GraphConvNet):
         super(GATConvNet, self).__init__(input_dim, output_dim, num_layers, embedding_dim, num_heads, edge_dim, batch_norm, dropout_prob, return_batch, pooling)
 
     def get_conv(self, input_dim, output_dim, edge_dim=None, aggr='add', bias=True, **kwargs):
-        num_heads = kwargs.get('num_heads', 1)
+        num_heads = kwargs.get('heads', 1)
         fill_value = kwargs.get('fill_value', 'max')
         return GATConv(input_dim, output_dim, heads=num_heads, edge_dim=edge_dim, aggr=aggr, bias=bias, fill_value=fill_value)
 

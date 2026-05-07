@@ -44,7 +44,8 @@ class InstanceRLEnv(RLBaseEnv):
         self.link_ranking_method = self.config.solver.link_ranking_method  # order
         # node mapping
         self.matching_mathod = self.config.solver.matching_mathod  # greedy
-        self.shortest_method = self.config.solver.shortest_method  # bfs_shortest
+        self.shortest_method = self.config.shortest_method  # bfs_shortest
+        # print(f"Shortest method: {self.shortest_method}")
         self.k_shortest = self.config.solver.k_shortest            # 10 
         # calcuate graph metrics
         self.ranked_v_net_nodes = rank_nodes(self.v_net, self.config.solver.node_ranking_method)
@@ -77,8 +78,8 @@ class InstanceRLEnv(RLBaseEnv):
         obs['curr_v_node_id'] = self.curr_v_node_id
         obs['v_net_size'] = self.v_net.num_nodes,
 
-        print("\n===== OBS =====")
-        print(obs.keys())
+        # print("\n===== OBS =====")
+        # print(obs.keys())
         return obs
 
     def reject(self):
@@ -258,8 +259,7 @@ class JointPRStepInstanceRLEnv(InstanceRLEnv):
         if done:
             pass
 
-        print("\n=== STEP ===")
-        print("action =", action)
+        
         # print(f'{t2-t1:.6f}={t3-t1:.6f}+{t2-t3:.6f}')
         return self.get_observation(), self.compute_reward(self.solution), done, self.get_info(solution_info)
 
@@ -306,19 +306,50 @@ class NodePairStepInstanceRLEnv(JointPRStepInstanceRLEnv):
     def curr_v_node_id(self):
         return self._curr_v_node_id
 
+    # def generate_action_mask(self):
+    #     mask = np.zeros([self.v_net.num_nodes, self.p_net.num_nodes])
+    #     for v_node_id, p_candidates in self.candidates_dict.items():
+    #         mask[v_node_id][p_candidates] = 1
+    #     # Each virtual node only can be changed once
+    #     for v_node_id, p_id in self.solution['node_slots'].items():
+    #         mask[:, p_id] = 0
+    #         mask[v_node_id, :] = 0
+    #     if mask.sum() == 0:
+    #         mask[0][0] = 1
+    #     return mask
+
     def generate_action_mask(self):
         mask = np.zeros([self.v_net.num_nodes, self.p_net.num_nodes])
-        for v_node_id, p_candidates in self.candidates_dict.items():
-            mask[v_node_id][p_candidates] = 1
-        # Each virtual node only can be changed once
+
+        for v_node_id in range(self.v_net.num_nodes):
+
+            # bỏ qua v_node đã được map
+            if v_node_id in self.solution['node_slots']:
+                continue
+
+            # lấy candidate động theo p_net hiện tại
+            candidate_nodes = self.controller.find_candidate_nodes(
+                self.v_net,
+                self.p_net,
+                v_node_id,
+                filter=self.selected_p_net_nodes  # tránh reuse
+            )
+
+            mask[v_node_id][candidate_nodes] = 1
+
+        # đảm bảo không chọn lại node đã dùng
         for v_node_id, p_id in self.solution['node_slots'].items():
             mask[:, p_id] = 0
             mask[v_node_id, :] = 0
+
+        # fallback nếu không còn action hợp lệ
         if mask.sum() == 0:
             mask[0][0] = 1
+
         return mask
 
     def step(self, action):
+
         """
         Joint Place and Route with action p_net node.
 
@@ -327,14 +358,25 @@ class NodePairStepInstanceRLEnv(JointPRStepInstanceRLEnv):
             Completed Success: (Node Mapping & Link Mapping)
             Falilure: (Node place failed or Link route failed)
         """
+        debug = False
+        if debug:
+            print("\n=== STEP ===")
+            print("action =", action)
         # The action is sampled from a heatmap with the shape of [p_net.num_nodes, v_net.num_nodes]
         p_node_id = action // self.v_net.num_nodes
         v_node_id = action % self.v_net.num_nodes
+        
+
 
         self._curr_v_node_id = v_node_id
+        
+        if debug:
+            print("curr node id =", self.curr_v_node_id)
+            print("model chose v:", v_node_id)
+            print("env uses v:", self.next_unplaced_v_node_id)
         # print(f'action ({action}) - v_node_id: {v_node_id}, p_node_id: {p_node_id}')
         if v_node_id in self.solution['node_slots']:
-            print(f'v_node_id {v_node_id} has been placed') if v_node_id != 0 else None
+            # print(f'v_node_id {v_node_id} has been placed in p_node_id {p_node_id}') if v_node_id != 0 else None
             self.solution['place_result'] = False
             solution_info = self.counter.count_solution(self.v_net, self.solution)
             done = True

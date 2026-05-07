@@ -270,9 +270,9 @@ class PNetVNodeFeatureConstructor(BaseFeatureConstructor):
             'v_node_x': v_node_obs['x']
         }
 
-        print("\n--- FeatureConstructor ---")
-        print("p_net_x", p_net_obs["x"].shape)
-        print("v_node_x", v_node_obs["x"].shape)
+        # print("\n--- FeatureConstructor ---")
+        # print("p_net_x", p_net_obs["x"].shape)
+        # print("v_node_x", v_node_obs["x"].shape)
 
         return combined_obs
         
@@ -280,7 +280,7 @@ class PNetVNodeFeatureConstructor(BaseFeatureConstructor):
 @FeatureConstructorRegistry.register('p_net_v_net')
 class PNetVNetFeatureConstructor(BaseFeatureConstructor):
 
-    def construct(self, p_net: PhysicalNetwork, v_net: VirtualNetwork, solution: Solution, curr_v_node_id: int) -> Dict[str, Any]:
+    def construct(self, p_net: PhysicalNetwork, v_net: VirtualNetwork, solution: Solution, curr_v_node_id: int, controller=None) -> Dict[str, Any]:
         v_net_obs = self._construct_v_net_features(p_net, v_net, solution, curr_v_node_id)
         p_net_obs = self._construct_p_net_features(p_net, v_net, solution, curr_v_node_id)
         # Concatenate the observations
@@ -294,9 +294,9 @@ class PNetVNetFeatureConstructor(BaseFeatureConstructor):
         }
 
 
-        print("\n--- FeatureConstructor ---")
-        print("p_net_x", p_net_obs["x"].shape)
-        print("v_net_x", v_net_obs["x"].shape)
+        # print("\n--- FeatureConstructor ---")
+        # print("p_net_x", p_net_obs["x"].shape)
+        # print("v_net_x", v_net_obs["x"].shape)
 
         return combined_obs
 
@@ -312,6 +312,8 @@ class FlagFeatureConstructor(BaseFeatureConstructor):
         curr_v_node_id,
         controller=None,
     ):
+        
+        debug = False
 
         # -------------------------
         # build full virne features
@@ -384,11 +386,14 @@ class FlagFeatureConstructor(BaseFeatureConstructor):
             "v_net_size": int(v_net.num_nodes),
         }
 
-        print("\nFLAG PAPER OBS")
-        print("p_net", p_x.shape)
-        print("v_net", v_x.shape)
+        if debug:
+            print("\nFLAG PAPER OBS")
+            print("p_net", p_x.shape)
+            print("v_net", v_x.shape)
 
         return obs
+    
+
 
 
 def get_selected_p_net_nodes(solution):

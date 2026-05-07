@@ -1,0 +1,13 @@
+python main.py \
+  solver.solver_name=my_dual_solver \
+  solver.pretrained_model_path=/app/Supervise_weight/bc_policy.pt \
+  +shortest_method=available_shortest \
+  training.num_train_epochs=10 \
+  rl.target_steps=1024 \
+  training.batch_size=128 \
+  rl.coef_entropy_loss=0.0 \
+  experiment.save_root_dir=/app/results \
+  experiment.run_id=my_test \
+  +p_net_setting=p_net_setting_flagvne \
+  +v_sim_setting=v_sim_setting_flagvne \
+  rl.feature_constructor.name=p_net_v_net

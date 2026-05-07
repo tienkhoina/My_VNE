@@ -14,10 +14,11 @@ class FlagInstanceEnv(NodePairStepInstanceRLEnv):
         counter,
         logger,
         config,
+        debug=False,
         **kwargs,
     ):
-
-        print("FLAG ENV INIT")
+        if debug:
+            print("FLAG ENV INIT")
 
         # paper dùng ranking
         kwargs["node_ranking_method"] = "nrm"
@@ -33,20 +34,18 @@ class FlagInstanceEnv(NodePairStepInstanceRLEnv):
             **kwargs,
         )
 
+        self.debug = debug
+
     # =========================
     # paper: next_unplaced_v_node_id
     # =========================
 
+    
     @property
     def next_unplaced_v_node_id(self):
-
-        placed = len(self.solution["node_slots"])
-
-        if placed >= self.v_net.num_nodes:
+        if self.num_placed_v_net_nodes == self.v_net.num_nodes:
             return 0
-
-        # paper dùng ranked_nodes
-        return self.v_net.ranked_nodes[placed]
+        return self.v_net.ranked_nodes[self.num_placed_v_net_nodes]
 
     # =========================
     # observation (paper style)
@@ -58,7 +57,7 @@ class FlagInstanceEnv(NodePairStepInstanceRLEnv):
             self.p_net,
             self.v_net,
             self.solution,
-            self.curr_v_node_id,  # dùng cho feature thôi
+            self.next_unplaced_v_node_id,  # dùng cho feature thôi
             self.controller,
         )
 
@@ -66,17 +65,18 @@ class FlagInstanceEnv(NodePairStepInstanceRLEnv):
         mask = self.generate_action_mask().flatten()
 
         obs["action_mask"] = mask
-
-        # paper dùng next_unplaced
         obs["curr_v_node_id"] = self.next_unplaced_v_node_id
+        
+
+
 
         obs["v_net_size"] = self.v_net.num_nodes
-
-        print("\nFLAG OBS OK")
-        print("p_net", obs["p_net_x"].shape)
-        print("v_net", obs["v_net_x"].shape)
-        print("mask", obs["action_mask"].shape)
-        print("curr", obs["curr_v_node_id"])
+        if self.debug:
+            print("\nFLAG OBS OK")
+            print("p_net", obs["p_net_x"].shape)
+            print("v_net", obs["v_net_x"].shape)
+            print("mask", obs["action_mask"].shape)
+            print("curr", obs["curr_v_node_id"])
 
         return obs
 

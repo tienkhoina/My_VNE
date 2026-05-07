@@ -1,0 +1,313 @@
+root@9038c488c32d:/app# python main.py   solver.solver_name=ppo_flag_meta   +shortest_method=available_shortest   training.num_train_epochs=0   rl.target_steps=0   experiment.save_root_dir=/app/results   experiment.run_id=dijkstra_baseline   +p_net_setting=p_net_setting_flagvne   +v_sim_setting=v_sim_setting_flagvne   rl.feature_constructor.name=flag
+Gym has been unmaintained since 2022 and does not support NumPy 2.0 amongst other critical functionality.
+Please upgrade to Gymnasium, the maintained drop-in replacement of Gym, or contact the authors of your software and request that they upgrade.
+See the migration guide at https://gymnasium.farama.org/introduction/migration_guide/ for additional information.
+/app/main.py:12: UserWarning: 
+The version_base parameter is not specified.
+Please specify a compatability version level, or None.
+Will assume defaults for version 1.1
+  @hydra.main(config_path="settings", config_name="main")
+/usr/local/lib/python3.10/site-packages/hydra/_internal/hydra.py:119: UserWarning: Future Hydra versions will no longer change working directory at job runtime by default.
+See https://hydra.cc/docs/1.2/upgrades/1.1_to_1.2/changes_to_job_working_dir/ for more information.
+  ret = run_job(
+
+--------------------    Start     --------------------
+
+Shortest method:  available_shortest
+INFO     Use ppo_flag_meta Solver (Type = r_learning)...
+
+INFO     Dataset Dir of Physical Network: dataset/p_net/100-waxman_[0.5-0.2]-cpu_[50-100]-max_cpu_None-gpu_[50-100]-max_gpu_None-ram_[50-100]-max_ram_None-bw_[50-100]-max_bw_None-seed_0
+INFO     Fix seed: 0
+CRITICAL Physical Network: Regenerate it from setting
+
+===== INIT META SOLVER =====
+**************************************************
+Key parameters of RL training are as following:
+**************************************************
+       device: CPU
+   num_workers: 1
+  distributed: False
+     gamma: 0.99
+     lr_actor: 0.001
+    lr_critic: 0.001
+   batch_size: 128
+coef_ent_loss: 0.01
+     norm_adv: True
+    clip_grad: True
+max_grad_norm: 1.0
+save_interval: 10
+eval_interval: 10
+ log_interval: 1
+**************************************************
+
+Logging training info at /app/results/ppo_flag_meta/dijkstra_baseline/logs/training_info.csv
+
+=== build_flag_real_policy (FLAG PAPER) ===
+=== META EXTRA INIT ===
+instance_dict init
+training_task_id_list init
+meta_policy: <class 'virne.solver.learning.rl_policy.flag_actor_critic_real.FlagActorCriticReal'>
+buffer: <class 'virne.solver.learning.rl_core.buffer.RolloutBuffer'>
+policy: <class 'virne.solver.learning.rl_policy.flag_actor_critic_real.FlagActorCriticReal'>
+INFO     Config:
+{'experiment': {'if_load_p_net': False,
+                'if_load_v_nets': False,
+                'if_save_config': True,
+                'if_save_p_net': False,
+                'if_save_v_nets': False,
+                'num_simulations': 1,
+                'run_id': 'dijkstra_baseline',
+                'save_root_dir': '/app/results',
+                'seed': 0},
+ 'inference': {'decode_strategy': 'greedy', 'k_searching': 1},
+ 'logger': {'backends': ['console', 'file', 'tensorboard'],
+            'experiment_name': 'default_experiment',
+            'level': 'INFO',
+            'log_dir_name': 'logs',
+            'log_file_name': 'running.log',
+            'log_show_interval': 20,
+            'project_name': 'virne',
+            'verbose': 1},
+ 'nn': {'batch_norm': False,
+        'dropout_prob': 0.0,
+        'embedding_dim': 128,
+        'hidden_dim': 128,
+        'num_gnn_layers': 3,
+        'num_layers': 1},
+ 'output_subdir': None,
+ 'p_net_setting': {'link_attrs_setting': [{'distribution': 'uniform',
+                                           'dtype': 'int',
+                                           'generative': True,
+                                           'high': 100,
+                                           'low': 50,
+                                           'name': 'bw',
+                                           'owner': 'link',
+                                           'type': 'resource'},
+                                          {'name': 'max_bw',
+                                           'originator': 'bw',
+                                           'owner': 'link',
+                                           'type': 'extrema'}],
+                   'node_attrs_setting': [{'distribution': 'uniform',
+                                           'dtype': 'int',
+                                           'generative': True,
+                                           'high': 100,
+                                           'low': 50,
+                                           'name': 'cpu',
+                                           'owner': 'node',
+                                           'type': 'resource'},
+                                          {'name': 'max_cpu',
+                                           'originator': 'cpu',
+                                           'owner': 'node',
+                                           'type': 'extrema'},
+                                          {'distribution': 'uniform',
+                                           'dtype': 'int',
+                                           'generative': True,
+                                           'high': 100,
+                                           'low': 50,
+                                           'name': 'gpu',
+                                           'owner': 'node',
+                                           'type': 'resource'},
+                                          {'name': 'max_gpu',
+                                           'originator': 'gpu',
+                                           'owner': 'node',
+                                           'type': 'extrema'},
+                                          {'distribution': 'uniform',
+                                           'dtype': 'int',
+                                           'generative': True,
+                                           'high': 100,
+                                           'low': 50,
+                                           'name': 'ram',
+                                           'owner': 'node',
+                                           'type': 'resource'},
+                                          {'name': 'max_ram',
+                                           'originator': 'ram',
+                                           'owner': 'node',
+                                           'type': 'extrema'}],
+                   'output': {'file_name': 'p_net.gml',
+                              'save_dir': 'dataset/p_net'},
+                   'topology': {'num_nodes': 100,
+                                'type': 'waxman',
+                                'wm_alpha': 0.5,
+                                'wm_beta': 0.2}},
+ 'recorder': {'if_save_records': True,
+              'if_temp_save_records': True,
+              'record_dir_name': 'records',
+              'summary_file_name': 'summary.csv'},
+ 'rl': {'clip_grad': True,
+        'coef_critic_loss': 0.5,
+        'coef_entropy_loss': 0.01,
+        'coef_mask_loss': 0.01,
+        'eps_clip': 0.2,
+        'explore_rate': 0.9,
+        'feature_constructor': {'extracted_attr_types': ['resource'],
+                                'if_use_aggregated_link_attrs': True,
+                                'if_use_degree_metric': True,
+                                'if_use_more_topological_metrics': True,
+                                'if_use_node_status_flags': True,
+                                'name': 'flag',
+                                'num_extracted_p_link_attrs': 1,
+                                'num_extracted_p_node_attrs': 3,
+                                'num_extracted_v_link_attrs': 1,
+                                'num_extracted_v_node_attrs': 3,
+                                'p_num_nodes': 100},
+        'gae_lambda': 0.98,
+        'gamma': 0.99,
+        'if_allow_baseline_unsafe_solve': False,
+        'if_use_baseline_solver': False,
+        'if_use_negative_sample': True,
+        'l2reg_rate': 0.00025,
+        'learning_rate': {'actor': 0.001,
+                          'cost_critic': 0.001,
+                          'critic': 0.001,
+                          'encoder': 0.001,
+                          'lambda_net': 0.001,
+                          'penalty_params': 0.0001},
+        'mask_actions': True,
+        'maskable_policy': True,
+        'max_grad_norm': 1.0,
+        'norm_advantage': True,
+        'norm_critic_loss': False,
+        'norm_reward': False,
+        'repeat_times': 10,
+        'reward_calculator': {'intermediate_reward': 0.1,
+                              'name': 'fixed_intermediate'},
+        'safe_rl': {'srl_alpha': 1.0, 'srl_beta': 0.1, 'srl_cost_budget': 0.2},
+        'target_kl': None,
+        'target_steps': 0,
+        'weight_decay': 1e-05},
+ 'shortest_method': 'available_shortest',
+ 'simulation': {'p_net_dataset_dir': 'dataset/p_net/100-waxman_[0.5-0.2]-cpu_[50-100]-max_cpu_None-gpu_[50-100]-max_gpu_None-ram_[50-100]-max_ram_None-bw_[50-100]-max_bw_None-seed_0',
+                'p_net_num_nodes': 100,
+                'p_net_setting_num_link_attrs': 2,
+                'p_net_setting_num_link_extrema_attrs': 1,
+                'p_net_setting_num_link_resource_attrs': 1,
+                'p_net_setting_num_node_attrs': 6,
+                'p_net_setting_num_node_extrema_attrs': 3,
+                'p_net_setting_num_node_resource_attrs': 3,
+                'p_net_setting_num_nodes': 100,
+                'v_nets_dataset_dir': 'dataset/v_nets/1000-[2-10]-random-500-0.1667-cpu_[0-20]-gpu_[0-20]-ram_[0-20]-bw_[0-50]-seed_0',
+                'v_sim_setting_num_link_attrs': 1,
+                'v_sim_setting_num_link_non_status_attrs': 1,
+                'v_sim_setting_num_link_resource_attrs': 1,
+                'v_sim_setting_num_node_attrs': 3,
+                'v_sim_setting_num_node_non_status_attrs': 3,
+                'v_sim_setting_num_node_resource_attrs': 3},
+ 'solver': {'allow_rejection': False,
+            'allow_revocable': False,
+            'k_shortest': 10,
+            'link_ranking_method': 'order',
+            'matching_mathod': 'greedy',
+            'node_ranking_method': 'order',
+            'pretrained_model_path': '',
+            'pretrained_subsolver_model_path': '',
+            'reusable': False,
+            'shortest_method': 'k_shortest',
+            'solver_name': 'ppo_flag_meta',
+            'sub_solver_name': None},
+ 'system': {'if_changeable_v_nets': False,
+            'if_offline_system': False,
+            'if_time_window': False,
+            'renew_v_net_simulator': False,
+            'time_window_size': 100},
+ 'training': {'batch_size': 128,
+              'distributed_training': False,
+              'eval_interval': 10,
+              'gpu_id': 0,
+              'if_use_random_training_seed': True,
+              'learning_rate': 0.001,
+              'log_interval': 1,
+              'model_dir_name': 'models',
+              'num_train_epochs': 0,
+              'num_workers': 10,
+              'save_interval': 10,
+              'seed': None,
+              'use_cuda': True,
+              'weight_decay': 1e-05},
+ 'v_sim_setting': {'arrival_rate': {'distribution': 'poisson',
+                                    'dtype': 'float',
+                                    'lam': 0.1667,
+                                    'reciprocal': True},
+                   'graph_attrs_setting': None,
+                   'lifetime': {'distribution': 'exponential',
+                                'dtype': 'float',
+                                'scale': 500},
+                   'link_attrs_setting': [{'distribution': 'uniform',
+                                           'dtype': 'int',
+                                           'generative': True,
+                                           'high': 50,
+                                           'low': 0,
+                                           'name': 'bw',
+                                           'owner': 'link',
+                                           'type': 'resource'}],
+                   'node_attrs_setting': [{'distribution': 'uniform',
+                                           'dtype': 'int',
+                                           'generative': True,
+                                           'high': 20,
+                                           'low': 0,
+                                           'name': 'cpu',
+                                           'owner': 'node',
+                                           'type': 'resource'},
+                                          {'distribution': 'uniform',
+                                           'dtype': 'int',
+                                           'generative': True,
+                                           'high': 20,
+                                           'low': 0,
+                                           'name': 'gpu',
+                                           'owner': 'node',
+                                           'type': 'resource'},
+                                          {'distribution': 'uniform',
+                                           'dtype': 'int',
+                                           'generative': True,
+                                           'high': 20,
+                                           'low': 0,
+                                           'name': 'ram',
+                                           'owner': 'node',
+                                           'type': 'resource'}],
+                   'num_v_nets': 1000,
+                   'output': {'events_file_name': 'events.yaml',
+                              'save_dir': 'dataset/v_nets',
+                              'setting_file_name': 'v_sim_setting.yaml',
+                              'v_nets_file_name': 'v_net.gml',
+                              'v_nets_save_dir': 'v_nets'},
+                   'topology': {'random_prob': 0.5, 'type': 'random'},
+                   'v_net_size': {'distribution': 'uniform',
+                                  'dtype': 'int',
+                                  'high': 10,
+                                  'low': 2}}}
+INFO     Config saved to /app/results/ppo_flag_meta/dijkstra_baseline/config.yaml
+INFO     Epoch 0
+INFO     Temp save record in /app/results/ppo_flag_meta/dijkstra_baseline/records/temp-20.csv
+
+CRITICAL Virtual networks: Generate them with seed 0
+Running with ppo_flag_meta in epoch 0: 100%|▉| 999/1000 [03:48<00:00,  4.70it/s, ac=0.54, r2c=0.42, inservice=00052INFO
+{'acceptance_rate': np.float64(0.538),
+ 'avg_r2c_ratio': np.float64(0.2674803930158432),
+ 'avg_reward': np.float64(0.868890313650764),
+ 'clock_running_time': 230.06865572929382,
+ 'early_rejection_count': np.int64(0),
+ 'long_term_avg_cost': np.float64(43.45968383941775),
+ 'long_term_avg_revenue': np.float64(18.160809735016485),
+ 'long_term_avg_time_revenue': np.float64(8833.428662841043),
+ 'long_term_r2c_ratio': np.float64(0.4178771709918586),
+ 'long_term_time_r2c_ratio': np.float64(0.4159481445081285),
+ 'max_inservice_count': np.int64(53),
+ 'min_p_net_available_resource': np.int64(31918),
+ 'min_p_net_link_available_resource': np.int64(16826),
+ 'min_p_net_node_available_resource': np.int64(14857),
+ 'p_net_dataset_dir': 'dataset/p_net/100-waxman_[0.5-0.2]-cpu_[50-100]-max_cpu_None-gpu_[50-100]-max_gpu_None-ram_[50-100]-max_ram_None-bw_[50-100]-max_bw_None-seed_0',
+ 'place_failure_count': np.int64(0),
+ 'route_failure_count': np.int64(462),
+ 'seed': 0,
+ 'start_run_time': '20260414T025852',
+ 'success_count': np.int64(538),
+ 'total_cost': np.float64(254760.66666666683),
+ 'total_max_single_step_violation': np.float64(-inf),
+ 'total_revenue': np.float64(106458.66666666663),
+ 'total_simulation_time': np.float64(5862.0),
+ 'total_time_cost': np.float64(124490419.07088557),
+ 'total_time_revenue': np.float64(51781558.82157419),
+ 'total_violation': np.float64(46200.0),
+ 'v_nets_dataset_dir': 'dataset/v_nets/1000-[2-10]-random-500-0.1667-cpu_[0-20]-gpu_[0-20]-ram_[0-20]-bw_[0-50]-seed_0'}
+CRITICAL save records to /app/results/ppo_flag_meta/dijkstra_baseline/records/ppo_flag_meta-dijkstra_baseline-20260414T025852.csv
+CRITICAL save summary to /app/results/ppo_flag_meta/ppo_flag_meta-reward_fixed_intermediate_0.1-feature_[_status_aggr_degree_moretopo]-dijkstra_baseline-summary.csv
+Running with ppo_flag_meta in epoch 0: 100%|█| 1000/1000 [03:50<00:00,  4.34it/s, ac=0.54, r2c=0.42, inservice=0005

@@ -279,16 +279,39 @@ class RLSolver(Solver):
 
     def load_model(self, checkpoint_path):
         print('Attempting to load the pretrained model')
+
         try:
-            checkpoint = torch.load(checkpoint_path)
-            if 'policy' not in checkpoint:
-                self.policy.load_state_dict(torch.load(checkpoint_path, map_location=lambda storage, loc: storage))
-            else:
+            device = self.device
+            checkpoint = torch.load(checkpoint_path, map_location=device)
+
+            # ===== LOAD POLICY =====
+            if isinstance(checkpoint, dict) and 'policy' in checkpoint:
                 self.policy.load_state_dict(checkpoint['policy'])
-                self.optimizer.load_state_dict(checkpoint['optimizer'])
-            self.logger.critical(f'Parameter Initialization: Loaded pretrained model from {checkpoint_path}')
+            else:
+                self.policy.load_state_dict(checkpoint)
+
+            # ===== LOAD OPTIMIZER (OPTIONAL) =====
+            if isinstance(checkpoint, dict) and 'optimizer' in checkpoint:
+                try:
+                    self.optimizer.load_state_dict(checkpoint['optimizer'])
+                    print("✔ Optimizer loaded")
+                except Exception as opt_e:
+                    print(f"⚠️ Optimizer load failed, re-init: {opt_e}")
+
+            else:
+                print("ℹ️ No optimizer in checkpoint → using fresh optimizer")
+
+            # ===== MOVE DEVICE =====
+            self.policy.to(device)
+
+            self.logger.critical(
+                f'Parameter Initialization: Loaded pretrained model from {checkpoint_path} on {device}'
+            )
+
         except Exception as e:
-            self.logger.critical(f'Parameter Initialization: Load pretrained failed from {checkpoint_path}\n{e}\nInitilized with random parameters')
+            self.logger.critical(
+                f'Parameter Initialization: Load pretrained failed from {checkpoint_path}\n{e}\nInitialized with random parameters'
+            )
 
     def train(self):
         """Set the mode to train"""
@@ -468,6 +491,12 @@ class PPOSolver(RLSolver):
         
 
     def update(self, ):
+
+        # print("=== DEBUG BUFFER ===")
+        # print("values:", self.buffer.values[:10])
+        # print("rewards:", self.buffer.rewards[:10])
+        # print("dones:", self.buffer.dones[:10])
+        # print("returns:", self.buffer.returns[:10])
         # assert self.buffer.size() >= self.batch_size
         device = torch.device('cpu')
         # copy the old policy parameters
@@ -497,8 +526,21 @@ class PPOSolver(RLSolver):
             advantages = returns - values.detach()
             if self.config.rl.norm_advantage and values.numel() != 0:
                 advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-9)
-  
+
+            # print("=== ADV DEBUG ===")
+            # print("adv raw mean:", (returns - values.detach()).mean().item())
+            # print("adv raw std:", (returns - values.detach()).std().item())
+
+            # print("adv norm mean:", advantages.mean().item())
+            # print("adv norm std:", advantages.std().item())
+
+            # print("adv sample:", advantages[:10])
+
             ratio = torch.exp(action_logprobs - old_action_logprobs)
+
+            # print("ratio mean:", ratio.mean().item())
+            # print("ratio std:", ratio.std().item())
+            
             surr1 = ratio * advantages
             surr2 = torch.clamp(ratio, 1. - self.eps_clip, 1. + self.eps_clip) * advantages
             actor_loss = - torch.min(surr1, surr2).mean()
@@ -520,7 +562,7 @@ class PPOSolver(RLSolver):
         
             if self.update_time % self.config.training.log_interval == 0:
                 info = {
-                    # 'lr': self.optimizer.defaults['lr'],
+                    'lr': self.optimizer.defaults['lr'],
                     'loss/loss': loss.detach().cpu().numpy(),
                     'loss/actor_loss': actor_loss.detach().cpu().numpy(),
                     'loss/critic_loss': critic_loss.detach().cpu().numpy(),
@@ -531,6 +573,10 @@ class PPOSolver(RLSolver):
                     'value/value': values.detach().mean().cpu().numpy(),
                     'value/return': returns.mean().cpu().numpy(),
                     'value/advantage': advantages.detach().mean().cpu().numpy(),
+                    'value/adv_mean': advantages.mean(),
+                    'value/adv_std': advantages.std(),
+                    'value/raw_adv_mean': (returns - values.detach()).mean(),
+                    'value/raw_adv_std': (returns - values.detach()).std(),
                     'value/reward': batch_rewards.mean().cpu().numpy(),
                     'grad/grad_clipped': grad_clipped.detach().cpu().numpy()
                 }

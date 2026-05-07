@@ -209,8 +209,10 @@ class PPOFlagMetaSolver(
         observation,
         sample=True,
     ):
+        debug = False
 
-        print("\n=== SELECT ACTION ===")
+        if debug:
+            print("\n=== SELECT ACTION ===")
 
         mask = observation["action_mask"]
 
@@ -334,9 +336,10 @@ class PPOFlagMetaSolver(
         # =========================
         # decode action
         # =========================
-        print("high", high_logits.shape)
-        print("low", low_logits.shape)
-        print("mask", mask.shape)
+        if debug:
+            print("high", high_logits.shape)
+            print("low", low_logits.shape)
+            print("mask", mask.shape)
 
         # =========================
         # decode action (FIX)
@@ -1257,6 +1260,7 @@ class PPOFlagMetaSolver(
 
         obs = env.get_observation()
 
+
         done = False
 
         # ------------------------------------
@@ -1264,6 +1268,7 @@ class PPOFlagMetaSolver(
         # ------------------------------------
 
         while not done:
+            # print("curr_v_node_id =", obs["curr_v_node_id"])
 
             tensor_obs = self.preprocess_obs(
                 obs,
@@ -1274,6 +1279,7 @@ class PPOFlagMetaSolver(
                 tensor_obs,
                 sample=False,
             )
+            # print("action v_node_id =", action%v_net_size)
 
             obs, reward, done, info = env.step(
                 action
