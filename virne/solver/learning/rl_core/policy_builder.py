@@ -280,7 +280,7 @@ class PolicyBuilder:
         # ===== HARD CODE OPTIMIZER (LIKE FLAG) =====
         optimizer = torch.optim.AdamW(
             policy.parameters(),
-            lr=1e-4,              # bạn có thể chỉnh
+            lr=1e-3,              # bạn có thể chỉnh
             weight_decay=1e-5     # giống style paper
         )
 

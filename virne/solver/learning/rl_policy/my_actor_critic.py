@@ -5,6 +5,7 @@ from torch_geometric.utils import to_dense_batch
 from virne.solver.learning.neural_network import (
     GATConvNet,
     GraphPooling,
+    DeepEdgeFeatureGAT
 )
 
 import math
@@ -104,12 +105,12 @@ class Critic(nn.Module):
 
 class NetEncoder(nn.Module):
 
-    GNNConvNet = GATConvNet
+    GNNConvNet = DeepEdgeFeatureGAT
 
     def __init__(self, net_feature_dim, net_edge_dim,embedding_dim=128, dropout_prob=0., batch_norm=False):
         super(NetEncoder, self).__init__()
         self.init_lin = nn.Linear(net_feature_dim, embedding_dim)
-        self.net_gnn = self.GNNConvNet(embedding_dim, embedding_dim, num_layers=2, embedding_dim=embedding_dim, edge_dim=net_edge_dim, dropout_prob=dropout_prob, batch_norm=batch_norm)
+        self.net_gnn = self.GNNConvNet(embedding_dim, embedding_dim, num_layers=5, embedding_dim=embedding_dim, edge_dim=net_edge_dim, dropout_prob=dropout_prob, batch_norm=batch_norm)
         self.net_mean_pooling = GraphPooling('mean')
 
     def forward(self, net_batch):

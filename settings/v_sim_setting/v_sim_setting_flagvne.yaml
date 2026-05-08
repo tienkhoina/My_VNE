@@ -28,7 +28,7 @@ v_net_size:
 arrival_rate:
   distribution: poisson
   dtype: float
-  lam: 0.1667
+  lam: 0.18
 
 
 # -------------------------
