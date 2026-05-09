@@ -1,5 +1,5 @@
 python main.py \
-  solver.solver_name=my_dual_solver \
+  solver.solver_name=nea_rank \
   solver.pretrained_model_path=/app/Supervise_weight/bc_policy.pt \
   +shortest_method=available_shortest \
   training.num_train_epochs=10 \
