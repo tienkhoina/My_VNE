@@ -1,13 +1,13 @@
 python main.py \
-  solver.solver_name=nea_rank \
-  solver.pretrained_model_path=/app/Supervise_weight/bc_policy.pt \
-  +shortest_method=available_shortest \
-  training.num_train_epochs=10 \
+  solver.solver_name=my_dual_solver \
+  solver.pretrained_model_path=/app/results/my_dual_solver/train_end/models/model.pkl \
+  +shortest_method=ilp_shortest \
+  training.num_train_epochs=5 \
   rl.target_steps=1024 \
   training.batch_size=128 \
-  rl.coef_entropy_loss=0.0 \
+  rl.coef_entropy_loss=0.005 \
   experiment.save_root_dir=/app/results \
-  experiment.run_id=my_test \
+  experiment.run_id=end_deep \
   +p_net_setting=p_net_setting_flagvne \
   +v_sim_setting=v_sim_setting_flagvne \
   rl.feature_constructor.name=p_net_v_net

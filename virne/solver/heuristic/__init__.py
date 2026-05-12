@@ -26,7 +26,7 @@ from .nrm_par_solver import (
 from .nrm_bc_env import  NRMBCSolver
 
 from .nea_par import NEAParSolver
-
+from .nea_bc import NEABCSolver
 
 
 __all__ = [

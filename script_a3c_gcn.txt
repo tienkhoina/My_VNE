@@ -1,0 +1,15 @@
+python main.py \
+  solver.solver_name=a3n_gcn_mlp \
+  +shortest_method=available_shortest \
+  training.num_train_epochs=10 \
+  rl.target_steps=256 \
+  training.batch_size=8 \
+  experiment.save_root_dir=/app/results \
+  experiment.run_id=my_test \
+  +p_net_setting=p_net_setting_flag_stress \
+  +v_sim_setting=v_sim_setting_flag_stress \
+  rl.feature_constructor.name=p_net_v_node \
+  rl.feature_constructor.if_use_degree_metric=False \
+  rl.feature_constructor.if_use_more_topological_metrics=False \
+  rl.feature_constructor.if_use_aggregated_link_attrs=True \
+  rl.feature_constructor.if_use_node_status_flags=True 

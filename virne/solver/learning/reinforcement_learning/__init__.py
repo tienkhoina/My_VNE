@@ -14,3 +14,4 @@ from .flag_env import *
 from .ppo_flag_real_solver import *
 from .ppo_flag_meta_solver import *
 from .my_solver import *
+from .GPRL_solver import *

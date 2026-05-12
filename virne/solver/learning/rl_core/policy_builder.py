@@ -9,7 +9,7 @@ from ..utils import get_pyg_data
 from ..obs_handler import POSITIONAL_EMBEDDING_DIM, P_NODE_STATUS_DIM, V_NODE_STATUS_DIM, V_NET_STATUS_DIM
 from virne.solver.learning.rl_core.tensor_convertor import TensorConvertor
 from virne.solver.learning.rl_policy.flag_actor_critic_real import FlagActorCriticReal
-
+from virne.solver.learning.rl_policy.GPRL_policy import ActorCritic as GPRLActorCritic
 
 class Encoder(nn.Module):
 
@@ -278,10 +278,107 @@ class PolicyBuilder:
         ).to(agent.device)
 
         # ===== HARD CODE OPTIMIZER (LIKE FLAG) =====
+        # =====================================================
+        # FREEZE EVERYTHING
+        # =====================================================
+
+        # for p in policy.parameters():
+        #     p.requires_grad = False
+
+        # # =====================================================
+        # # UNFREEZE CRITIC ONLY
+        # # =====================================================
+
+        # for p in policy.critic.parameters():
+        #     p.requires_grad = True
+
+        # optimizer = torch.optim.AdamW(
+        #     policy.parameters(),
+        #     lr=1e-3,              # bạn có thể chỉnh
+        #     weight_decay=1e-5     # giống style paper
+        # )
+
         optimizer = torch.optim.AdamW(
-            policy.parameters(),
-            lr=1e-3,              # bạn có thể chỉnh
-            weight_decay=1e-5     # giống style paper
+
+            [
+                # =================================================
+                # ENCODER
+                # =================================================
+                {
+                    "params": policy.encoder.parameters(),
+                    "lr": 1e-5,
+                    "weight_decay": 1e-5
+                },
+
+                # =================================================
+                # ACTOR
+                # =================================================
+                {
+                    "params": policy.actor.parameters(),
+                    "lr": 3e-5,
+                    "weight_decay": 1e-5
+                },
+
+                # =================================================
+                # CRITIC
+                # =================================================
+                {
+                    "params": policy.critic.parameters(),
+                    "lr": 3e-4,
+                    "weight_decay": 1e-5
+                }
+            ]
+
+        )
+
+        # optimizer = torch.optim.AdamW(
+        #     filter(lambda p: p.requires_grad,
+        #         policy.parameters()),
+        #     lr=1e-3,
+        #     weight_decay=1e-5
+        # )
+        return policy, optimizer
+    @staticmethod
+    def build_gprl_policy(agent):
+
+        """
+        Build GPRL paper reproduction policy.
+        """
+
+        feature_dim_config = \
+            PolicyBuilder.get_feature_dim_config(
+                agent.config
+            )
+
+        general_config = \
+            PolicyBuilder.get_general_nn_config(
+                agent.config
+            )
+
+        policy = GPRLActorCritic(
+
+            p_net_num_nodes=
+                feature_dim_config['p_net_num_nodes'],
+
+            p_net_x_dim=
+                feature_dim_config['p_net_x_dim'],
+
+            p_net_edge_dim=
+                feature_dim_config['p_net_edge_dim'],
+
+            v_net_x_dim=
+                feature_dim_config['v_net_x_dim'],
+
+            v_net_edge_dim=
+                feature_dim_config['v_net_edge_dim'],
+
+            **general_config
+
+        ).to(agent.device)
+
+        optimizer = OptimizerBuilder.build_optimizer(
+            agent.config,
+            policy
         )
 
         return policy, optimizer
