@@ -1,13 +1,14 @@
 python main.py \
-  solver.solver_name=my_dual_solver \
-  solver.pretrained_model_path=/app/results/my_dual_solver/train_end/models/model.pkl \
-  +shortest_method=ilp_shortest \
-  training.num_train_epochs=5 \
+  solver.solver_name=ppo_gprl \
+  +shortest_method=available_shortest \
+  solver.pretrained_model_path=/app/results/ppo_gprl/end_deep/models/model.pkl \
+  training.num_train_epochs=0 \
   rl.target_steps=1024 \
   training.batch_size=128 \
   rl.coef_entropy_loss=0.005 \
   experiment.save_root_dir=/app/results \
-  experiment.run_id=end_deep \
+  experiment.run_id=end_deep_1 \
   +p_net_setting=p_net_setting_flagvne \
   +v_sim_setting=v_sim_setting_flagvne \
   rl.feature_constructor.name=p_net_v_net
+  experiment.seed=0

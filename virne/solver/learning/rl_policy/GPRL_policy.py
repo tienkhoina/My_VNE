@@ -58,7 +58,7 @@ class ActorCritic(BaseActorCritic):
         p_net_edge_dim,
         v_net_x_dim,
         v_net_edge_dim,
-        hidden_size=40,
+        hidden_size=128,
         **kwargs
     ):
         super().__init__()
@@ -71,7 +71,7 @@ class ActorCritic(BaseActorCritic):
 
         self.actor = GraphPinterNet(
             hidden_size=hidden_size,
-            num_layers=1,
+            num_layers=2,
             dropout=0.
         )
 
@@ -766,8 +766,11 @@ class GraphPinterNet(nn.Module):
             batch_size,
             -1,
             -1
-        ).permute(2, 0, 1)
-
+        ).permute(2, 0, 1).repeat(
+            self.pointer.num_layers,
+            1,
+            1
+        )
         # ---------------------------------------------------------------------
         # IMPORTANT
         #
